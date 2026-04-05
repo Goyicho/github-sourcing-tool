@@ -1,0 +1,647 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>GitHub Sourcing Tool</title>
+    <style>
+      :root {
+        --border: #e5e5e5;
+        --muted: #5c5c5c;
+        --accent: #0b57d0;
+      }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+        margin: 0;
+        padding: 24px 24px 48px;
+        color: #111;
+        line-height: 1.45;
+        max-width: 920px;
+      }
+      h1 {
+        font-size: 1.5rem;
+        margin: 0 0 8px;
+        font-weight: 650;
+      }
+      .intro {
+        color: var(--muted);
+        font-size: 0.95rem;
+        margin-bottom: 16px;
+        max-width: 68ch;
+      }
+      .run-strip {
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 14px 18px 16px;
+        margin-bottom: 20px;
+        background: #f7f8fb;
+      }
+      .run-strip h3 {
+        margin: 0 0 10px;
+        font-size: 0.8rem;
+        font-weight: 650;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: #444;
+      }
+      .run-strip ul {
+        margin: 0;
+        padding-left: 1.2em;
+      }
+      .run-strip li {
+        margin-bottom: 6px;
+        font-size: 0.875rem;
+        color: #222;
+        line-height: 1.42;
+      }
+      .run-strip li:last-child {
+        margin-bottom: 0;
+      }
+      .run-strip strong {
+        font-weight: 650;
+      }
+      .card {
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 18px 20px;
+        margin-bottom: 16px;
+        background: #fff;
+      }
+      .card h2 {
+        margin: 0 0 4px;
+        font-size: 1.05rem;
+        font-weight: 650;
+      }
+      .section-lead {
+        margin: 0 0 16px;
+        font-size: 0.85rem;
+        color: var(--muted);
+        max-width: 72ch;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 16px 20px;
+        align-items: start;
+      }
+      .grid.grid-tight {
+        grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
+      }
+      .field label.primary {
+        display: block;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #222;
+        margin-bottom: 4px;
+      }
+      .field .help {
+        font-size: 0.75rem;
+        color: var(--muted);
+        margin: 0 0 6px;
+        max-width: 42ch;
+        line-height: 1.35;
+      }
+      input[type="text"],
+      input[type="number"],
+      textarea,
+      select {
+        padding: 8px 10px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        width: 100%;
+        box-sizing: border-box;
+      }
+      textarea {
+        min-height: 64px;
+        resize: vertical;
+        font-family: inherit;
+      }
+      .field-inline {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        align-items: flex-start;
+      }
+      .field-inline .field {
+        flex: 1 1 200px;
+        min-width: 140px;
+      }
+      label.check {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        font-size: 0.85rem;
+        cursor: pointer;
+        margin-top: 4px;
+      }
+      label.check input {
+        margin-top: 3px;
+      }
+      label.check span {
+        color: #222;
+      }
+      label.check .subhelp {
+        display: block;
+        font-size: 0.72rem;
+        color: var(--muted);
+        font-weight: 400;
+        margin-top: 2px;
+      }
+      button#runBtn {
+        padding: 12px 22px;
+        border: 0;
+        background: #111;
+        color: #fff;
+        border-radius: 8px;
+        font-size: 0.95rem;
+        font-weight: 600;
+        cursor: pointer;
+        margin-top: 8px;
+      }
+      button#runBtn:disabled {
+        opacity: 0.55;
+        cursor: not-allowed;
+      }
+      .pill {
+        display: inline-block;
+        font-size: 0.65rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        padding: 2px 6px;
+        border-radius: 4px;
+        margin-right: 6px;
+        vertical-align: middle;
+      }
+      .pill-search { background: #e8f0fe; color: #174ea6; }
+      .pill-score { background: #e6f4ea; color: #137333; }
+      .pill-api { background: #fce8e6; color: #c5221f; }
+      details.limits {
+        margin-top: 12px;
+        border-top: 1px solid var(--border);
+        padding-top: 14px;
+      }
+      details.limits summary {
+        cursor: pointer;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #333;
+      }
+      .muted { color: var(--muted); font-size: 0.85rem; }
+      .progress {
+        width: 100%;
+        height: 10px;
+        background: #f0f0f0;
+        border-radius: 999px;
+        overflow: hidden;
+        margin-top: 10px;
+      }
+      .bar {
+        height: 100%;
+        width: 0%;
+        background: var(--accent);
+        border-radius: 999px;
+        transition: width 0.2s ease;
+      }
+      table {
+        border-collapse: collapse;
+        width: 100%;
+        margin-top: 12px;
+        font-size: 0.8rem;
+      }
+      th, td {
+        border-bottom: 1px solid #eee;
+        padding: 8px 6px;
+        text-align: left;
+        vertical-align: top;
+      }
+      th {
+        background: #fafafa;
+        font-weight: 600;
+        font-size: 0.72rem;
+      }
+      th abbr {
+        text-decoration: underline dotted;
+        cursor: help;
+      }
+      a { color: var(--accent); }
+      #previewWrap h3 {
+        margin: 16px 0 8px;
+        font-size: 0.95rem;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>GitHub sourcing</h1>
+    <p class="intro">
+      Search public repositories on GitHub, collect <strong>owners</strong> and <strong>top contributors</strong>, merge by username, score with three pillars (<strong>Builder</strong>, <strong>Product</strong>, <strong>Reach</strong>), then download a CSV. Requires <code>GITHUB_TOKEN</code> in <code>.env</code>.
+    </p>
+
+    <aside class="run-strip" aria-label="How one run works">
+      <h3>How this run works</h3>
+      <ul>
+        <li>
+          <strong>Builder</strong> — Each person gets a signal from how they appear on the repos we found (recency, damped contributor counts, optional public-event boost), then normalized with everyone else in this run.
+        </li>
+        <li>
+          <strong>Product</strong> — We score repos for product-like cues (description, homepage, topics, license; optionally README and CI workflows) and attach the strongest match to each person.
+        </li>
+        <li>
+          <strong>Reach</strong> — For up to the first N people (see Limits), we look up followers (log-scaled) and, if you set KOLs, overlap with follows; that feeds the third pillar before the weighted sum.
+        </li>
+      </ul>
+    </aside>
+
+    <div class="card">
+      <h2><span class="pill pill-search">Search</span> What repositories should we look at?</h2>
+      <p class="section-lead">
+        These fields build the GitHub <code>q=</code> query for <strong>repository search</strong>. Only public repos you can see with your token are included.
+      </p>
+
+      <div class="field" style="margin-bottom: 16px;">
+        <label class="primary" for="topics">Topics</label>
+        <p class="help">Each item becomes <code>topic:name</code> and they are OR‑combined. Example: <code>ai, fintech</code> → repos tagged with either topic. You can also type <code>topic:machine-learning</code> yourself.</p>
+        <textarea id="topics" placeholder="ai, fintech, devtools"></textarea>
+      </div>
+
+      <div class="field" style="margin-bottom: 16px;">
+        <label class="primary" for="freeKeywords">Extra search text (optional)</label>
+        <p class="help">Inserted into the query as you write it. Use GitHub syntax: quotes, <code>AND</code> / <code>OR</code>. Example: <code>"vector database" AND rust</code>.</p>
+        <input id="freeKeywords" type="text" placeholder='e.g. "developer platform" AND payments' />
+      </div>
+
+      <div class="grid">
+        <div class="field">
+          <label class="primary" for="language">Language</label>
+          <p class="help">Adds <code>language:…</code> (e.g. <code>Python</code>, <code>TypeScript</code>). Leave empty for any language.</p>
+          <input id="language" type="text" placeholder="Python" />
+        </div>
+        <div class="field">
+          <label class="primary" for="license">License</label>
+          <p class="help">Adds <code>license:…</code> (e.g. <code>MIT</code>, <code>apache-2.0</code>). Empty = no license filter.</p>
+          <input id="license" type="text" placeholder="MIT" />
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2><span class="pill pill-search">Filters</span> Narrow the repo list</h2>
+      <p class="section-lead">Star counts and dates limit which repos enter the pipeline. Sort order changes which repos GitHub returns first (pagination is capped by “max repos” below).</p>
+
+      <div class="grid">
+        <div class="field">
+          <label class="primary" for="minStars">Minimum stars</label>
+          <p class="help">Adds <code>stars:&gt;=N</code>. Empty = no minimum.</p>
+          <input id="minStars" type="text" inputmode="numeric" placeholder="e.g. 5" />
+        </div>
+        <div class="field">
+          <label class="primary" for="maxStars">Maximum stars</label>
+          <p class="help">Adds <code>stars:&lt;=N</code>. Helps avoid mega‑popular libraries. <strong>Clear the field</strong> to remove the cap (API sends <code>null</code>).</p>
+          <input id="maxStars" type="text" inputmode="numeric" value="800" />
+        </div>
+        <div class="field">
+          <label class="primary" for="createdWithin">Repo age — first commit</label>
+          <p class="help">Only repos <strong>created</strong> on or after “today minus N days” (<code>created:&gt;=date</code>). Empty = ignore.</p>
+          <input id="createdWithin" type="text" inputmode="numeric" placeholder="e.g. 730" />
+        </div>
+        <div class="field">
+          <label class="primary" for="pushedWithin">Repo freshness — last push</label>
+          <p class="help">Only repos with a <strong>push</strong> in the last N days (<code>pushed:&gt;=date</code>). Good for “actively maintained.” Empty = ignore.</p>
+          <input id="pushedWithin" type="text" inputmode="numeric" placeholder="e.g. 90" />
+        </div>
+        <div class="field">
+          <label class="primary" for="repoSort">Order of search results</label>
+          <p class="help">Passed to GitHub’s repo search API. “Stars low → high” surfaces smaller repos first; “Best match” uses GitHub’s default relevance.</p>
+          <select id="repoSort">
+            <option value="stars_asc" selected>Stars: low → high</option>
+            <option value="best_match">Best match (default relevance)</option>
+            <option value="updated_desc">Recently updated</option>
+            <option value="stars_desc">Stars: high → low</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field-inline" style="margin-top: 16px;">
+        <label class="check">
+          <input type="checkbox" id="excludeOrg" />
+          <span>
+            Skip organization-owned repos
+            <span class="subhelp">Ignores repos where owner type is <code>Organization</code> (many large OSS foundations).</span>
+          </span>
+        </label>
+        <label class="check">
+          <input type="checkbox" id="earlyStageScore" checked />
+          <span>
+            Penalize huge star counts in scoring
+            <span class="subhelp">When on, repos with very many stars contribute less to the <strong>builder</strong> pillar (obscurity multiplier).</span>
+          </span>
+        </label>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2><span class="pill pill-score">Scoring</span> How important is each pillar?</h2>
+      <p class="section-lead">
+        Each person gets three raw signals (builder, product, reach). They are scaled 0–1 <strong>within this run</strong>, then combined:
+        <code>score = w_b×builder + w_p×product + w_r×reach</code>.
+        Enter any <strong>positive</strong> weights; the app <strong>normalizes</strong> them to sum to 1 (e.g. 3, 1, 1 → 60% / 20% / 20%).
+      </p>
+
+      <div class="grid grid-tight">
+        <div class="field">
+          <label class="primary" for="pillarBuilder">Builder</label>
+          <p class="help">Recency of matched repos, damped contributor counts, optional public-event boost.</p>
+          <input id="pillarBuilder" type="text" inputmode="decimal" value="1" />
+        </div>
+        <div class="field">
+          <label class="primary" for="pillarProduct">Product</label>
+          <p class="help">Repo description, homepage, topics, license; optionally README + CI workflows.</p>
+          <input id="pillarProduct" type="text" inputmode="decimal" value="1" />
+        </div>
+        <div class="field">
+          <label class="primary" for="pillarReach">Reach</label>
+          <p class="help">Follower count (log scale) + optional overlap with your KOL list (see below).</p>
+          <input id="pillarReach" type="text" inputmode="decimal" value="1" />
+        </div>
+        <div class="field">
+          <label class="primary" for="builderContribW">Commit weight in builder (0–1)</label>
+          <p class="help">Share of the <strong>builder</strong> blend that comes from commit volume vs repo recency. Lower = less “pure contributor” bias.</p>
+          <input id="builderContribW" type="text" inputmode="decimal" value="0.22" />
+        </div>
+      </div>
+
+      <label class="check" style="margin-top: 14px;">
+        <input type="checkbox" id="deepProduct" />
+        <span>
+          Fetch README + GitHub Actions per repo
+          <span class="subhelp">Adds ~2 API calls per repository to score long READMEs and <code>.github/workflows</code> YAML files. Improves the <strong>product</strong> pillar only.</span>
+        </span>
+      </label>
+
+      <div class="field" style="margin-top: 16px;">
+        <label class="primary" for="kolLogins">KOL GitHub usernames (optional)</label>
+        <p class="help">If set, the app loads each candidate’s <strong>following</strong> (first page only) and boosts <strong>reach</strong> when they follow someone on this list. Comma or newline separated.</p>
+        <textarea id="kolLogins" placeholder="e.g. karpathy&#10;torvalds"></textarea>
+      </div>
+
+      <div class="grid" style="margin-top: 12px;">
+        <div class="field">
+          <label class="primary" for="maxReachLookup">People to fetch for reach</label>
+          <p class="help">Only the <strong>first N</strong> people (after sorting by builder+product) get <code>/users</code> and optional <code>/following</code> calls. Others get reach 0 before normalization.</p>
+          <input id="maxReachLookup" type="text" inputmode="numeric" value="200" />
+        </div>
+        <div class="field">
+          <label class="primary" for="kolShare">KOL vs followers (0–1)</label>
+          <p class="help">When the KOL list is non-empty: how much of the <strong>reach</strong> subscore is KOL follow overlap vs follower count.</p>
+          <input id="kolShare" type="text" inputmode="decimal" value="0.45" />
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2><span class="pill pill-api">Activity</span> Optional: recent public GitHub events</h2>
+      <p class="section-lead">If enabled, the app pulls each user’s <strong>public events</strong> (pushes, PRs, issues, …) and adds a boost to the <strong>builder</strong> pillar. ~1 request per person enriched (plus pagination up to 2 pages).</p>
+
+      <label class="check">
+        <input type="checkbox" id="enrichActivity" />
+        <span>
+          Boost builder score from recent public activity
+          <span class="subhelp">Applies only to the first “max people” rows in the current candidate list (see below).</span>
+        </span>
+      </label>
+
+      <div class="grid" style="margin-top: 14px;">
+        <div class="field">
+          <label class="primary" for="activityWindow">Activity window (days)</label>
+          <p class="help">Only events newer than this many days count toward the weighted sum.</p>
+          <input id="activityWindow" type="text" inputmode="numeric" value="21" />
+        </div>
+        <div class="field">
+          <label class="primary" for="maxActivityPeople">Max people to enrich</label>
+          <p class="help">Caps how many users get an events API call (starts from top of the list after repo processing).</p>
+          <input id="maxActivityPeople" type="text" inputmode="numeric" value="80" />
+        </div>
+        <div class="field">
+          <label class="primary" for="activityBoost">Activity multiplier</label>
+          <p class="help">Larger = stronger bump to the raw builder signal per unit of weighted event score (then everything is re-normalized).</p>
+          <input id="activityBoost" type="text" inputmode="decimal" value="12" />
+        </div>
+      </div>
+    </div>
+
+    <details class="limits card">
+      <summary>Limits &amp; API usage (recency decay, repo count, contributors)</summary>
+      <p class="section-lead" style="margin-top: 12px;">These control how many repositories and people are touched and how strongly <strong>repo last-updated time</strong> affects the builder pillar.</p>
+      <div class="grid">
+        <div class="field">
+          <label class="primary" for="recencyDays">Recency half-life (days)</label>
+          <p class="help">Used in <strong>builder</strong>: older <code>updated_at</code> on a repo decays the recency score (exponential). Larger = slower decay.</p>
+          <input id="recencyDays" type="text" inputmode="numeric" value="180" />
+        </div>
+        <div class="field">
+          <label class="primary" for="repoCount">Max repositories</label>
+          <p class="help">Cap on repos returned from search (then contributors are fetched per repo). Main driver of API volume.</p>
+          <input id="repoCount" type="text" inputmode="numeric" value="200" />
+        </div>
+        <div class="field">
+          <label class="primary" for="contributorsPerRepo">Contributors per repo</label>
+          <p class="help">How many top contributors to request from GitHub per repository (plus the owner is always included).</p>
+          <input id="contributorsPerRepo" type="text" inputmode="numeric" value="20" />
+        </div>
+        <div class="field">
+          <label class="primary" for="maxUniquePeople">Stop after N unique people</label>
+          <p class="help">Stops adding new usernames once this many distinct logins exist (speeds up large searches).</p>
+          <input id="maxUniquePeople" type="text" inputmode="numeric" value="800" />
+        </div>
+      </div>
+    </details>
+
+    <button type="button" id="runBtn" onclick="runSearch()">Run search</button>
+    <div id="jobLine" class="muted" style="margin-top: 10px;"></div>
+
+    <div class="card">
+      <h2>Status</h2>
+      <div id="statusText" class="muted">Idle.</div>
+      <div class="progress"><div class="bar" id="bar"></div></div>
+      <div class="muted" id="csvLine" style="margin-top: 10px;"></div>
+
+      <div id="previewWrap" style="display:none;">
+        <h3>Preview — top 20 by final score</h3>
+        <p class="muted" style="font-size: 0.8rem; margin: 0 0 8px;">
+          <strong>Bld. / Prod / Rch.</strong> are 0–1 within this run. <strong>Activity</strong> is the raw weighted event sum if enrichment ran.
+        </p>
+        <table>
+          <thead>
+            <tr>
+              <th>Person</th>
+              <th>Repo updated</th>
+              <th><abbr title="Final weighted score">Score</abbr></th>
+              <th><abbr title="Builder pillar (normalized)">Bld.</abbr></th>
+              <th><abbr title="Product pillar (normalized)">Prod</abbr></th>
+              <th><abbr title="Reach pillar (normalized)">Rch.</abbr></th>
+              <th><abbr title="Stars on repo that drove best builder signal">★ repo</abbr></th>
+              <th><abbr title="Weighted public events if enrichment on">Act.</abbr></th>
+              <th>Repos</th>
+            </tr>
+          </thead>
+          <tbody id="previewBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <script>
+      function parseTopics() {
+        const raw = document.getElementById("topics").value || "";
+        return raw
+          .split(",")
+          .map(s => s.trim())
+          .filter(Boolean);
+      }
+
+      function maybeInt(v) {
+        const s = (v || "").toString().trim();
+        if (!s) return null;
+        const n = parseInt(s, 10);
+        if (Number.isNaN(n)) return null;
+        return n;
+      }
+
+      function maybeFloat(v) {
+        const s = (v || "").toString().trim();
+        if (!s) return null;
+        const n = parseFloat(s);
+        if (Number.isNaN(n)) return null;
+        return n;
+      }
+
+      function parseKolLogins() {
+        const raw = document.getElementById("kolLogins").value || "";
+        return raw
+          .split(/[\n,]+/)
+          .map(s => s.trim())
+          .filter(Boolean);
+      }
+
+      async function runSearch() {
+        const btn = document.getElementById("runBtn");
+        btn.disabled = true;
+
+        document.getElementById("previewWrap").style.display = "none";
+        document.getElementById("csvLine").textContent = "";
+        document.getElementById("previewBody").innerHTML = "";
+        document.getElementById("statusText").textContent = "Submitting job...";
+
+        const payload = {
+          topics: parseTopics(),
+          free_keywords: document.getElementById("freeKeywords").value || "",
+          language: (document.getElementById("language").value || "").trim() || null,
+          license: (document.getElementById("license").value || "").trim() || null,
+          min_stars: maybeInt(document.getElementById("minStars").value),
+          max_stars: maybeInt(document.getElementById("maxStars").value),
+          repo_created_within_days: maybeInt(document.getElementById("createdWithin").value),
+          repo_pushed_within_days: maybeInt(document.getElementById("pushedWithin").value),
+          exclude_org_owned: document.getElementById("excludeOrg").checked,
+          early_stage_scoring: document.getElementById("earlyStageScore").checked,
+          repo_search_sort: document.getElementById("repoSort").value,
+          enrich_field_activity: document.getElementById("enrichActivity").checked,
+          activity_window_days: maybeInt(document.getElementById("activityWindow").value) || 21,
+          max_people_activity_enrichment: maybeInt(document.getElementById("maxActivityPeople").value) || 80,
+          activity_boost_per_unit: maybeFloat(document.getElementById("activityBoost").value) ?? 12,
+          weight_builder: maybeFloat(document.getElementById("pillarBuilder").value) ?? 1,
+          weight_product: maybeFloat(document.getElementById("pillarProduct").value) ?? 1,
+          weight_reach: maybeFloat(document.getElementById("pillarReach").value) ?? 1,
+          builder_contribution_weight: maybeFloat(document.getElementById("builderContribW").value) ?? 0.22,
+          kol_github_logins: parseKolLogins(),
+          deep_product_signals: document.getElementById("deepProduct").checked,
+          max_people_reach_lookup: maybeInt(document.getElementById("maxReachLookup").value) || 200,
+          kol_share_of_reach: maybeFloat(document.getElementById("kolShare").value) ?? 0.45,
+          recency_days: maybeInt(document.getElementById("recencyDays").value) || 180,
+          repo_count: maybeInt(document.getElementById("repoCount").value) || 200,
+          contributors_per_repo: maybeInt(document.getElementById("contributorsPerRepo").value) || 20,
+          dedup_people_by_login: true,
+          max_unique_people: maybeInt(document.getElementById("maxUniquePeople").value) || 800
+        };
+
+        const res = await fetch("/api/search/run", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        if (!res.ok) {
+          const text = await res.text();
+          alert("Run failed: " + text);
+          btn.disabled = false;
+          return;
+        }
+
+        const job = await res.json();
+        document.getElementById("jobLine").textContent = "Job ID: " + job.job_id;
+
+        const jobId = job.job_id;
+        poll(jobId, btn);
+      }
+
+      async function poll(jobId, btn) {
+        const statusText = document.getElementById("statusText");
+        const bar = document.getElementById("bar");
+        const csvLine = document.getElementById("csvLine");
+
+        let done = false;
+        while (!done) {
+          const res = await fetch("/api/search/status/" + encodeURIComponent(jobId));
+          if (!res.ok) throw new Error("Status fetch failed");
+          const job = await res.json();
+
+          statusText.textContent = `${job.status || ""}${job.message ? ": " + job.message : ""}`;
+          bar.style.width = (Math.round((job.progress || 0) * 1000) / 10).toFixed(1) + "%";
+
+          if (job.status === "done") {
+            done = true;
+            csvLine.innerHTML = job.output_csv_path
+              ? `CSV ready: <a href="/api/search/result_csv/${jobId}">Download</a>`
+              : "CSV ready.";
+
+            try {
+              const rres = await fetch("/api/search/result_json/" + encodeURIComponent(jobId));
+              if (rres.ok) {
+                const rows = await rres.json();
+                renderPreview(rows.slice(0, 20));
+              }
+            } catch (e) {}
+          } else if (job.status === "error") {
+            done = true;
+            csvLine.textContent = "Error: " + (job.message || "unknown");
+          } else {
+            await new Promise(r => setTimeout(r, 2000));
+          }
+        }
+        btn.disabled = false;
+      }
+
+      function renderPreview(rows) {
+        document.getElementById("previewWrap").style.display = "block";
+        const body = document.getElementById("previewBody");
+        body.innerHTML = "";
+        for (const r of rows) {
+          const tr = document.createElement("tr");
+          const repos = (r.matched_repos || "").split(";").filter(Boolean).slice(0, 5);
+          tr.innerHTML = `
+            <td>
+              <a href="${r.profile_url}" target="_blank" rel="noreferrer">${r.login}</a>
+            </td>
+            <td>${r.latest_repo_updated_at || ""}</td>
+            <td>${r.score}</td>
+            <td>${r.pillar_builder != null ? r.pillar_builder : ""}</td>
+            <td>${r.pillar_product != null ? r.pillar_product : ""}</td>
+            <td>${r.pillar_reach != null ? r.pillar_reach : ""}</td>
+            <td>${r.top_signal_repo_stars != null ? r.top_signal_repo_stars : ""}</td>
+            <td>${r.field_activity_weighted != null && r.field_activity_weighted !== 0 ? r.field_activity_weighted : ""}</td>
+            <td>${repos.map(x => `<a href="https://github.com/${x}" target="_blank" rel="noreferrer">${x}</a>`).join("<br/>")}</td>
+          `;
+          body.appendChild(tr);
+        }
+      }
+    </script>
+  </body>
+</html>
