@@ -381,6 +381,4 @@ If you add features that change behavior, update this **README** and, if applica
 
 ## License
 
-This repository does not yet include a `LICENSE` file. **If you open-source it, add one** (for example MIT, Apache-2.0, or AGPL—choose based on how you want derivatives and hosted services treated). Until a license is added, default copyright applies and others do not have clear permission to reuse the code.
-
-If you want a permissive default for a small internal tool, **MIT** is a common choice; paste the MIT license text into a file named `LICENSE` in the project root.
+This project is licensed under the MIT License - see the LICENSE file for details.
